@@ -1,0 +1,11 @@
+{
+  "enabled": false,
+  "local_enabled": true,
+  "recipient": "user@example.invalid",
+  "smtp": {
+    "host": "",
+    "port": 465,
+    "security": "ssl",
+    "sender": ""
+  }
+}

@@ -1,0 +1,8 @@
+# Linux import/synthetic-image baseline only. Framework source is hash-pinned in the bundle.
+# No Windows desktop, Qt, browser launcher, OCR models or game assets are installed here.
+numpy>=2.2,<3
+opencv-python-headless>=4.12,<5
+Pillow>=11,<13
+psutil>=6,<8
+requests>=2.32,<3
+packaging>=24,<27

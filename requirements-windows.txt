@@ -1,0 +1,2 @@
+-r workspace/okww-cloud-tech/requirements.txt
+playwright==1.63.0
