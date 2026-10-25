@@ -1,149 +1,52 @@
-<div align="center">
-  <h1 align="center">
-    <img src="icons/icon.png" width="200" alt="ok-ww logo"/>
-    <br/>
-    ok-ww
-  </h1>
+# 云鸣潮 Linux 服务器源码版（2026-10-25）
 
-  <p>
-    一个基于图像识别的鸣潮自动化程序，支持后台运行，基于 <a href="https://ok-script.com">ok-script</a> 开发。
-    <br />
-    An image-recognition-based automation tool for Wuthering Waves, with background mode support, developed with <a href="https://ok-script.com">ok-script</a>.
-  </p>
+这是服务器当前运行的Linux源码快照，包含全部应用/角色/任务源码、Linux浏览器设备层、CPU OCR/声骸识别、固定框架Python源码及识别资产，以及当前使用的会话所有权和完整流程调度代码。
 
-  <p><i>通过 Windows 接口模拟用户进行操作，无内存读取、无文件修改</i></p>
-</div>
+- [本机Windows版本](https://github.com/fflun/ok-wuthering-waves/tree/platform/windows-cloud-20261025)
+- [验证范围、私有状态与许可说明](PUBLICATION.md)
+- [第三方来源](THIRD_PARTY_CLOUD.md)
 
-<!-- Badges -->
-<div align="center">
+## 目录与部署布局
 
-![平台](https://img.shields.io/badge/platform-Windows-blue)
-[![GitHub release](https://img.shields.io/github/v/release/ok-oldking/ok-wuthering-waves)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![总下载量](https://img.shields.io/github/downloads/ok-oldking/ok-wuthering-waves/total)](https://github.com/ok-oldking/ok-wuthering-waves/releases)
-[![Discord](https://img.shields.io/discord/296598043787132928?color=5865f2&label=%20Discord)](https://discord.gg/vVyCatEBgA)
+| 源码目录 | 作用 |
+| --- | --- |
+| `workspace/wuwa-linux/code` | 服务器当前应用、适配、任务及测试源码 |
+| `workspace/wuwa-linux/vendor/ok` | 服务器使用的固定框架Python源码，已包含Linux兼容修改 |
+| `workspace/wuwa-linux/assets` | 固定识别资产与声骸模型 |
+| `workspace/full-alignment-20261023` | 同会话完整流程、锁/停止控制、会话生命周期与阶段汇总 |
+| `framework-linux.patch` | 框架Linux兼容修改的原始差异参考 |
 
-</div>
+## 环境与无输入检查
 
-<p align="center"><strong>官方网站：</strong> <a href="https://ok-script.com/ok-ww">https://ok-script.com/ok-ww</a></p>
+Python **3.12**；Ubuntu/Debian、Chromium及其系统库、中文字体和Xvfb显示服务。Python依赖与服务器当前CPU环境一致，不安装Windows输入组件或OpenVINO/NPU。
 
-### [English](docs/en/index.md) | 中文说明 | [繁體中文](docs/zh-TW/index.md) | [日本語](docs/ja/index.md)
-
-**演示与教程:** [![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)](https://youtu.be/h6P1KWjdnB4)
-
----
-
-## ⚠️ 免责声明
-
-本软件为外部辅助工具，旨在自动化《鸣潮》的部分游戏流程。它完全通过模拟常规用户界面与游戏交互，遵循相关法律法规。本项目旨在简化用户的重复性操作，不会破坏游戏平衡或提供不公平优势，也绝不会修改任何游戏文件或数据。
-
-本软件开源、免费，仅供个人学习与交流使用，请勿用于任何商业或营利性目的。开发者团队拥有本项目的最终解释权。因使用本软件而产生的任何问题，均与本项目及开发者无关。
-
-请注意，根据库洛官方的《鸣潮》公平运营声明：
-> 严禁利用任何第三方工具破坏游戏体验。
-> 我们将严厉打击使用外挂、加速器、作弊软件、宏脚本等违规工具的行为，这些行为包括但不限于自动挂机、技能加速、无敌模式、瞬移、修改游戏数据等操作。
-> 一经查证，我们将视违规情况和次数，采取包括但不限于扣除违规收益、冻结或永久封禁游戏账号等措施。
-
-**使用本软件即表示您已阅读、理解并同意以上声明，并自愿承担一切潜在风险。**
-
-## 🚀 快速开始
-
-1.  **下载安装包**：从下方的“下载渠道”中选择一个，下载最新的 `ok-ww-win32-China-setup.exe` 安装文件。
-2.  **安装程序**：双击 `ok-ww-win32-China-setup.exe` 文件，并按照安装向导的提示完成安装。
-3.  **运行程序**：安装完成后，从桌面快捷方式或开始菜单启动 `ok-ww` 即可。
-
-## 📥 下载渠道
-
-*   **[GitHub](https://github.com/ok-oldking/ok-wuthering-waves/releases)**: 官方发布页，全球访问速度快。（**请下载 `setup.exe` 安装包，而不是 `Source Code` 源码压缩包**）
-*   **[Mirror酱](https://mirrorchyan.com/zh/projects?rid=okww&source=ok-ww-readme)**: 国内镜像，下载可能需要购买其平台的 CD-KEY。
-*   **[百度网盘](https://pan.baidu.com/s/102Mh1djq2B1T-cIJhct9Gg?pwd=okww)**: 免费下载
-*   **[夸克网盘](https://pan.quark.cn/s/418018ddf7a0)**: 免费下载
-
-## ✨ 主要功能
-<img width="1774" height="1182" alt="QQ_1762960844719" src="https://github.com/user-attachments/assets/c5eb0145-0d45-44f9-85b3-184de0ef20bf" />
-
-*   **高分辨率支持**: 流畅运行于 4K 及以下所有 16:9 分辨率（最低 1280x720）。部分功能兼容 21:9 等超宽屏。
-*   **后台模式**: 支持游戏窗口最小化或被遮挡时在后台运行，不影响您使用电脑。
-*   **智能识别**: 全角色自动识别，无需手动配置技能序列，一键启动。
-*   **自动静音**: 在后台运行时，可自动将游戏静音。
-
-## 🔧 疑难解答 (Troubleshooting)
-
-如果遇到问题，请在提问前按以下步骤逐一排查：
-
-1.  **杀毒软件**：将软件的安装目录添加到您的杀毒软件（包括 Windows Defender）的**信任区或白名单**中，以防文件被误删或拦截。
-2.  **显示设置**：
-    *   一般可以开启游戏内滤镜。
-    *   可以开启 Windows HDR，但必须关闭 Auto HDR（自动 HDR）。
-    *   建议关闭显卡滤镜，例如 RTX HDR、RTX 动态亮丽（RTX Dynamic Vibrance）、AMD 锐化等。
-    *   使用游戏默认的亮度设置。
-    *   关闭任何在游戏画面上显示信息的叠加层（如 MSI Afterburner、Fraps 等显示的帧率）。
-3.  **自定义按键**：如果您修改了游戏内的默认按键，请务必在 `ok-ww` 的设置中进行同步配置。仅支持设置中列出的按键。
-4.  **软件版本**：检查并确保您使用的是最新版本的 `ok-ww`。
-5.  **游戏性能**：请确保游戏能稳定在 **60 FPS** 运行。如果帧率不稳定，请尝试降低游戏画质或分辨率。
-6.  **游戏断线**：在 `ok-ww` 设置中开启“启动后关闭启动器”，确保启动器进程未在运行；或者使用源码运行。
-7.  **OpenVINO 报错**：如果遇到 `0x000005` 报错，并且使用的是带 NPU 的 Intel CPU，请更新至 Intel 最新的 NPU 驱动。
-8.  **寻求帮助**：如果以上步骤都无法解决您的问题，请通过社区渠道提交详细的错误报告。
-9.  **关闭自动奔跑**：游戏设置里关闭自动奔跑。
-10. **为所有角色装备主声骸**：队伍中的每个角色都必须装备主声骸（画面右下角应显示声骸技能图标）。任何一个角色未装备主声骸时，自动战斗将无法正常运行，并可能反复锁定敌人而不攻击。
-
----
-
-## 💻 开发者专区
-
-### 从源码运行 (Python)
-
-推荐使用 Python 3.12。要求 Python 3.9 及以上版本，但其他版本尚未经过完整测试。
-
-```bash
-# 安装或更新依赖
-pip install -r requirements.txt --upgrade
-
-# 运行 Release 版本
-python main.py
-
-# 运行 Debug 版本
-python main_debug.py
+```sh
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements-linux.txt
+.venv/bin/python -m playwright install chromium
+.venv/bin/python verify_source.py
+DISPLAY=:99 bash run-linux.sh preflight
+bash run-linux.sh help
 ```
 
-### 命令行参数
+`preflight`只构造任务、验证进程锁和清理；不登录、不启动游戏任务。Xvfb需先由部署者准备。真实浏览器路径通过`OKWW_CHROMIUM`设置，必须是已安装的实际Chromium二进制；不随源码发布浏览器安装包。
 
-您可以通过命令行参数实现自动化启动。
+## 实际运行前配置
 
-```bash
-# 示例：启动后自动执行第一个任务（一条龙），并在任务完成后退出程序
-ok-ww.exe -t 1 -e
-```
+完整服务器调度源码保留原部署布局约定：应用位于`/opt/cloudgames/wuwa-20261023`、完整调度位于`/opt/cloudgames/full-alignment-20261023`。迁到新机时，可将上述workspace两个源码目录分别部署到对应位置，或先一致地调整这些路径。不要覆盖已有生产目录、锁或会话。
 
-*   `-t` 或 `--task`: 启动后自动执行第 N 个任务。`1` 代表任务列表中的第一个。
-*   `-e` 或 `--exit`: 任务执行完毕后自动退出程序。
+使用独立非root运行用户，准备共享锁目录、显示服务与运行目录权限；设置`OKWW_INSTALLED_RUNTIME`及`PYTHONPATH`指向该应用/框架。`main_cloud_background.py login`提供官方登录页面；实际日常入口参数见`main_cloud_daily.py --help`。完整调度入口是`run_aligned_full.py --scheduled`，包含自己的锁、账号、停止、资源待确认事务与每周证据核对，不能在已有运行者旁另起实例。
 
-## 💬 加入我们
+账号注册/绑定、任务目标、每周参考身份、通知及私人浏览器会话需在新机配置。源码没有复制这些凭据和验收材料；未配置时安全拒绝是预期行为，不能通过关闭核验或伪造完成记录来启动。Python依赖和完整源码已提供，但本快照不是自动初始化账号的安装器。
 
-*   **QQ 交流群**: `1126263229` (入群答案: `老王同学OK`)
-*   **QQ 频道**: [点击加入](https://pd.qq.com/s/djmm6l44y) (群满或获取最新资讯)
-*   **开发者群**: `926858895` ( **注意**: 此群仅面向有开发能力、希望参与贡献的开发者，入群前请确保您已能够从源码成功运行项目。)
+## 当前功能与验证
 
-本项目基于 [ok-script](https://ok-script.com) 框架开发，简单易维护。欢迎有兴趣的开发者使用 [ok-script](https://ok-script.com) 开发您自己的自动化项目。
+- 日常、三次周本与周常优先，可选Boss/聚落声骸失败后进入下一阶段；成功领取与次数按真实回执记账。
+- 每周已完成记录按游戏周复用，避免重刷。
+- 保留当前资源、领取、复苏和账号核验，不在发布时改变额度或清除记录。
+- 最新聚落规则：清怪完成后有限步行、图像、绕圈和同聚落重定位寻找；仍未确认吸收时保存证据继续下一聚落，结果单独列为未确认。不是吸收成功证明。
+- 当前日常已有实际自动运行成功；本次聚落策略102项相关离线测试及无输入入口检查通过，新策略仍待下一次真实聚落运行验收。此前可选声骸阶段的失败不能写成整套全部成功。
 
-## 🔗 使用ok-script的项目：
+原`code/linux/README.md`说明的是早期离线设备层，现仅保留为历史设计参考；当前部署与入口以本README和完整调度代码为准。
 
-* 鸣潮 [https://github.com/ok-oldking/ok-wuthering-waves](https://github.com/ok-oldking/ok-wuthering-waves)
-* 原神(停止维护,
-  但是后台过剧情可用) [https://github.com/ok-oldking/ok-genshin-impact](https://github.com/ok-oldking/ok-genshin-impact)
-* 少前2 [https://github.com/ok-oldking/ok-gf2](https://github.com/ok-oldking/ok-gf2)
-* 星铁 [https://github.com/Shasnow/ok-starrailassistant](https://github.com/Shasnow/ok-starrailassistant)
-* 星痕共鸣 [https://github.com/Sanheiii/ok-star-resonance](https://github.com/Sanheiii/ok-star-resonance)
-* 二重螺旋 [https://github.com/BnanZ0/ok-duet-night-abyss](https://github.com/BnanZ0/ok-duet-night-abyss)
-* 白荆回廊(停止更新) [https://github.com/ok-oldking/ok-baijing](https://github.com/ok-oldking/ok-baijing)
-
-
-## ❤️ 赞助与致谢
-
-### 赞助商 (Sponsors)
-*   **EXE 签名**: Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/).
-
-### 致谢
-*   [lazydog28/mc_auto_boss](https://github.com/lazydog28/mc_auto_boss)
-*   [ok-oldking/OnnxOCR](https://github.com/ok-oldking/OnnxOCR)
-*   [zhiyiYo/PyQt-Fluent-Widgets](https://github.com/zhiyiYo/PyQt-Fluent-Widgets)
-*   [Toufool/AutoSplit](https://github.com/Toufool/AutoSplit)
+根目录上游原版src/assets等保留为基线；Linux云版本使用workspace目录。没有复制或更改本机Windows登录态与配置。

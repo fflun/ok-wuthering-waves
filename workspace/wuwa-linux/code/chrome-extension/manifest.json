@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "OK-WW 云鸣潮连接器（实验）",
+  "version": "0.1.6",
+  "description": "连接当前普通 Chrome 的云鸣潮标签页与本机 OK-WW。",
+  "permissions": ["debugger", "activeTab"],
+  "host_permissions": ["http://127.0.0.1:19876/*"],
+  "background": {"service_worker": "worker.js"},
+  "action": {"default_popup": "popup.html"}
+}

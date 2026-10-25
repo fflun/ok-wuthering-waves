@@ -1,0 +1,3 @@
+-r requirements-linux.lock.txt
+onnxocr-ppocrv5[onnx]==0.0.22
+playwright==1.63.0

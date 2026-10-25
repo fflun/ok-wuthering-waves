@@ -1,0 +1,103 @@
+--- vendor/ok/device/capture_methods/__init__.py
++++ vendor/ok/device/capture_methods/__init__.py
+@@ -1,26 +1,11 @@
+-from ok.device.capture_methods.adb import ADBCaptureMethod
+-from ok.device.capture_methods.base import BaseCaptureMethod, BaseWindowsCaptureMethod
+-from ok.device.capture_methods.bitblt import BitBltCaptureMethod, ForegroundBitBltCaptureMethod
+-from ok.device.capture_methods.bitblt_utils import (
+-    BGRA_CHANNEL_COUNT,
+-    PBYTE,
+-    PW_CLIENT_ONLY,
+-    PW_RENDERFULLCONTENT,
+-    BitBltCtxDummy,
+-    capture_by_bitblt,
+-    capture_desktop_by_bitblt,
+-    clean_up_bitblt,
+-    clean_up_desktop_bitblt,
+-    composite_hwnds,
+-    get_crop_point,
+-    parse_reg_flag,
+-    try_delete_dc,
+-)
+-from ok.device.capture_methods.browser import BrowserCaptureMethod, BrowserWGC, BrowserWindowAdapter
+-from ok.device.capture_methods.desktop_duplication import DesktopDuplicationCaptureMethod
+-from ok.device.capture_methods.hwnd_window import HwndWindow, check_pos, get_monitors_bounds, get_mute_state, is_window_in_screen_bounds, set_mute_state
+-from ok.device.capture_methods.image import ImageCaptureMethod
+-from ok.device.capture_methods.nemu_ipc import NemuIpcCaptureMethod
+-from ok.device.capture_methods.types import ColorChannel, ImageShape, decimal, is_digit, is_valid_hwnd
+-from ok.device.capture_methods.update import get_capture, get_win_graphics_capture, update_capture_method
+-from ok.device.capture_methods.windows_graphics import WindowsGraphicsCaptureMethod
++"""Lazy backend exports: importing the browser must not import Windows capture."""
++import importlib
++_EXPORTS = {'ADBCaptureMethod': ('ok.device.capture_methods.adb', 'ADBCaptureMethod'), 'BaseCaptureMethod': ('ok.device.capture_methods.base', 'BaseCaptureMethod'), 'BaseWindowsCaptureMethod': ('ok.device.capture_methods.base', 'BaseWindowsCaptureMethod'), 'BitBltCaptureMethod': ('ok.device.capture_methods.bitblt', 'BitBltCaptureMethod'), 'ForegroundBitBltCaptureMethod': ('ok.device.capture_methods.bitblt', 'ForegroundBitBltCaptureMethod'), 'BGRA_CHANNEL_COUNT': ('ok.device.capture_methods.bitblt_utils', 'BGRA_CHANNEL_COUNT'), 'PBYTE': ('ok.device.capture_methods.bitblt_utils', 'PBYTE'), 'PW_CLIENT_ONLY': ('ok.device.capture_methods.bitblt_utils', 'PW_CLIENT_ONLY'), 'PW_RENDERFULLCONTENT': ('ok.device.capture_methods.bitblt_utils', 'PW_RENDERFULLCONTENT'), 'BitBltCtxDummy': ('ok.device.capture_methods.bitblt_utils', 'BitBltCtxDummy'), 'capture_by_bitblt': ('ok.device.capture_methods.bitblt_utils', 'capture_by_bitblt'), 'capture_desktop_by_bitblt': ('ok.device.capture_methods.bitblt_utils', 'capture_desktop_by_bitblt'), 'clean_up_bitblt': ('ok.device.capture_methods.bitblt_utils', 'clean_up_bitblt'), 'clean_up_desktop_bitblt': ('ok.device.capture_methods.bitblt_utils', 'clean_up_desktop_bitblt'), 'composite_hwnds': ('ok.device.capture_methods.bitblt_utils', 'composite_hwnds'), 'get_crop_point': ('ok.device.capture_methods.bitblt_utils', 'get_crop_point'), 'parse_reg_flag': ('ok.device.capture_methods.bitblt_utils', 'parse_reg_flag'), 'try_delete_dc': ('ok.device.capture_methods.bitblt_utils', 'try_delete_dc'), 'BrowserCaptureMethod': ('ok.device.capture_methods.browser', 'BrowserCaptureMethod'), 'BrowserWGC': ('ok.device.capture_methods.browser', 'BrowserWGC'), 'BrowserWindowAdapter': ('ok.device.capture_methods.browser', 'BrowserWindowAdapter'), 'DesktopDuplicationCaptureMethod': ('ok.device.capture_methods.desktop_duplication', 'DesktopDuplicationCaptureMethod'), 'HwndWindow': ('ok.device.capture_methods.hwnd_window', 'HwndWindow'), 'check_pos': ('ok.device.capture_methods.hwnd_window', 'check_pos'), 'get_monitors_bounds': ('ok.device.capture_methods.hwnd_window', 'get_monitors_bounds'), 'get_mute_state': ('ok.device.capture_methods.hwnd_window', 'get_mute_state'), 'is_window_in_screen_bounds': ('ok.device.capture_methods.hwnd_window', 'is_window_in_screen_bounds'), 'set_mute_state': ('ok.device.capture_methods.hwnd_window', 'set_mute_state'), 'ImageCaptureMethod': ('ok.device.capture_methods.image', 'ImageCaptureMethod'), 'NemuIpcCaptureMethod': ('ok.device.capture_methods.nemu_ipc', 'NemuIpcCaptureMethod'), 'ColorChannel': ('ok.device.capture_methods.types', 'ColorChannel'), 'ImageShape': ('ok.device.capture_methods.types', 'ImageShape'), 'decimal': ('ok.device.capture_methods.types', 'decimal'), 'is_digit': ('ok.device.capture_methods.types', 'is_digit'), 'is_valid_hwnd': ('ok.device.capture_methods.types', 'is_valid_hwnd'), 'get_capture': ('ok.device.capture_methods.update', 'get_capture'), 'get_win_graphics_capture': ('ok.device.capture_methods.update', 'get_win_graphics_capture'), 'update_capture_method': ('ok.device.capture_methods.update', 'update_capture_method'), 'WindowsGraphicsCaptureMethod': ('ok.device.capture_methods.windows_graphics', 'WindowsGraphicsCaptureMethod')}
++__all__ = list(_EXPORTS)
++def __getattr__(name):
++    if name not in _EXPORTS:
++        raise AttributeError(name)
++    module, attribute = _EXPORTS[name]
++    value = getattr(importlib.import_module(module), attribute)
++    globals()[name] = value
++    return value
+--- vendor/ok/device/interaction_methods/__init__.py
++++ vendor/ok/device/interaction_methods/__init__.py
+@@ -1,11 +1,11 @@
+-from ok.device.interaction_methods.adb import ADBInteraction
+-from ok.device.interaction_methods.base import BaseInteraction
+-from ok.device.interaction_methods.browser import BrowserInteraction
+-from ok.device.interaction_methods.do_nothing import DoNothingInteraction
+-from ok.device.interaction_methods.foreground_post_message import ForegroundPostMessageInteraction
+-from ok.device.interaction_methods.genshin import GenshinInteraction, INPUT, MOUSEINPUT, SendInput
+-from ok.device.interaction_methods.keys import ADB_KEY_MAP, PYDIRECT_KEY_MAP, normalize_pydirect_key, vk_key_dict
+-from ok.device.interaction_methods.post_message import PostMessageInteraction
+-from ok.device.interaction_methods.pydirect import PyDirectInteraction
+-from ok.device.interaction_methods.pynput import PynputInteraction
+-from ok.device.interaction_methods.swipe import insert_swipe
++"""Lazy backend exports: importing the browser must not import Windows capture."""
++import importlib
++_EXPORTS = {'ADBInteraction': ('ok.device.interaction_methods.adb', 'ADBInteraction'), 'BaseInteraction': ('ok.device.interaction_methods.base', 'BaseInteraction'), 'BrowserInteraction': ('ok.device.interaction_methods.browser', 'BrowserInteraction'), 'DoNothingInteraction': ('ok.device.interaction_methods.do_nothing', 'DoNothingInteraction'), 'ForegroundPostMessageInteraction': ('ok.device.interaction_methods.foreground_post_message', 'ForegroundPostMessageInteraction'), 'GenshinInteraction': ('ok.device.interaction_methods.genshin', 'GenshinInteraction'), 'INPUT': ('ok.device.interaction_methods.genshin', 'INPUT'), 'MOUSEINPUT': ('ok.device.interaction_methods.genshin', 'MOUSEINPUT'), 'SendInput': ('ok.device.interaction_methods.genshin', 'SendInput'), 'ADB_KEY_MAP': ('ok.device.interaction_methods.keys', 'ADB_KEY_MAP'), 'PYDIRECT_KEY_MAP': ('ok.device.interaction_methods.keys', 'PYDIRECT_KEY_MAP'), 'normalize_pydirect_key': ('ok.device.interaction_methods.keys', 'normalize_pydirect_key'), 'vk_key_dict': ('ok.device.interaction_methods.keys', 'vk_key_dict'), 'PostMessageInteraction': ('ok.device.interaction_methods.post_message', 'PostMessageInteraction'), 'PyDirectInteraction': ('ok.device.interaction_methods.pydirect', 'PyDirectInteraction'), 'PynputInteraction': ('ok.device.interaction_methods.pynput', 'PynputInteraction'), 'insert_swipe': ('ok.device.interaction_methods.swipe', 'insert_swipe')}
++__all__ = list(_EXPORTS)
++def __getattr__(name):
++    if name not in _EXPORTS:
++        raise AttributeError(name)
++    module, attribute = _EXPORTS[name]
++    value = getattr(importlib.import_module(module), attribute)
++    globals()[name] = value
++    return value
+--- vendor/ok/task/TaskExecutor.py
++++ vendor/ok/task/TaskExecutor.py
+@@ -9,7 +9,7 @@
+ from ok.util.GlobalConfig import basic_options
+
+ from ok.util.logger import Logger, config_logger
+
+ from ok.util.process import is_cuda_12_or_above, prevent_sleeping
+
+-from ok.util.window import ratio_text_to_number
+
++from ok.util.geometry import ratio_text_to_number
+
+ 
+
+ logger = Logger.get_logger(__name__)
+
+ 
+
+--- vendor/ok/util/process.py
++++ vendor/ok/util/process.py
+@@ -693,6 +693,8 @@
+     return shortcut_path
+
+ 
+
+ 
+
+-def prevent_sleeping(yes=True):
+
++def prevent_sleeping(yes=True):
++    if sys.platform != "win32":
++        return False
+
+     # Prevent the system from sleeping
+
+     ctypes.windll.kernel32.SetThreadExecutionState(0x80000002 if yes else 0x80000000)
+
