@@ -1,0 +1,162 @@
+--- a/cloud_nest_state.py
++++ b/cloud_nest_state.py
+@@ -8,6 +8,7 @@
+ 
+ TARGET = '落渊南丘残象聚落'
+ KEY = 'go_nest:41:25'
++CLEARED_NEST_CONTINUATION_POLICY = 'verified_cleared_nest_continue_after_bounded_search'
+ OPTIONAL_PICKUP_TARGET = '陷足流川残象聚落'
+ UNCONFIRMED_PHASE = 'PICKUP_UNCONFIRMED_ALLOWED'
+ TERMINAL_PHASES = ('PICKED_UP','SEARCHED_NO_ECHO',UNCONFIRMED_PHASE)
+@@ -130,3 +131,22 @@
+         self.record.update(phase=UNCONFIRMED_PHASE,pickup_search=evidence,absorbed=False,
+                            absorption_status='UNCONFIRMED',continuation_authorized=True)
+         self._write()
++
++
++    def continue_after_search(self,evidence):
++        """User-authorized continuation; does not certify echo absorption."""
++        if self.record is None or self.record['phase']!='CLEARED_PENDING_PICKUP':
++            raise RuntimeError('Continuation requires verified cleared nest')
++        if (self.scope['total'] not in (24,36,41,48)
++                or evidence.get('target')!=self.scope['target']
++                or evidence.get('count')!=[self.scope['total']]*2
++                or evidence.get('bounded_search_completed') is not True
++                or evidence.get('user_policy')!=CLEARED_NEST_CONTINUATION_POLICY
++                or not isinstance(evidence.get('absorb_sent'),bool)):
++            raise RuntimeError('Cleared-nest continuation evidence incomplete')
++        path=Path(evidence.get('image',''))
++        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest()!=evidence.get('image_sha256'):
++            raise RuntimeError('Cleared-nest continuation image missing or changed')
++        self.record.update(phase=UNCONFIRMED_PHASE,pickup_search=evidence,absorbed=False,
++                           absorption_status='UNCONFIRMED',continuation_authorized=True)
++        self._write()
+--- a/cloud_nest_current.py
++++ b/cloud_nest_current.py
+@@ -3,7 +3,7 @@
+ import time
+ from pathlib import Path
+ from cloud_nest_pickup import NestPickup, PickupNotConfirmed
+-from cloud_nest_state import NestState, pending_hint, OPTIONAL_PICKUP_TARGET, TERMINAL_PHASES
++from cloud_nest_state import NestState, pending_hint, OPTIONAL_PICKUP_TARGET, TERMINAL_PHASES, CLEARED_NEST_CONTINUATION_POLICY
+ 
+ 
+ class NestProgressLost(RuntimeError):
+@@ -232,7 +232,8 @@
+             image_sha256=hashlib.sha256(image.read_bytes()).hexdigest()))
+         task.send_key('esc',after_sleep=.5)
+     def unconfirmed_allowed(search):
+-        if receipt is None or receipt.scope['target']!=OPTIONAL_PICKUP_TARGET:
++        continue_cleared=getattr(task,'_cloud_nest_continue_unconfirmed',False) is True
++        if receipt is None or (not continue_cleared and receipt.scope['target']!=OPTIONAL_PICKUP_TARGET):
+             return False
+         if receipt.scope['day']!=__import__('cloud_nest_state').game_day():
+             raise RuntimeError('Final-nest pickup crossed the game-day boundary')
+@@ -247,18 +248,24 @@
+         image=Path(output)/f'pickup-{time.time_ns()}-unconfirmed-allowed.png'
+         cv2.imwrite(str(image),task.frame)
+         box,key,name,first,second=select(task,False,receipt.record)
+-        if name!=OPTIONAL_PICKUP_TARGET or first!=second or first!=(24,24):
+-            raise RuntimeError('Final-nest named completion not verified')
+-        receipt.unconfirmed_allowed(dict(target=name,count=list(first),absorb_sent=search.absorb_sent,
+-            bounded_search_completed=True,user_policy='final_nest_ignore_unconfirmed_absorption',
+-            verified_at=time.time(),image=str(image),image_sha256=hashlib.sha256(image.read_bytes()).hexdigest()))
++        if name!=receipt.scope['target'] or first!=second or first!=(progress.total,progress.total):
++            raise RuntimeError('Cleared-nest named completion not verified')
++        proof=dict(target=name,count=list(first),absorb_sent=search.absorb_sent,
++            bounded_search_completed=True,verified_at=time.time(),image=str(image),
++            image_sha256=hashlib.sha256(image.read_bytes()).hexdigest())
++        if continue_cleared:
++            proof['user_policy']=CLEARED_NEST_CONTINUATION_POLICY
++            receipt.continue_after_search(proof)
++        else:
++            proof['user_policy']='final_nest_ignore_unconfirmed_absorption'
++            receipt.unconfirmed_allowed(proof)
+         task.info['Nest Pickup Unconfirmed Allowed']=True
+         task.send_key('esc',after_sleep=.5)
+         return True
+     pickup = NestPickup(task, lambda: progress.complete, original_find_f,
+                         on_confirmed=lambda: receipt.picked(), native_approach=native_approach,
+                         return_to_same_nest=return_to_same_nest, output=output,
+-                        native_circle=lambda:task.run_in_circle_to_find_echo(circle_count=3),
++                        native_circle=lambda:task.run_in_circle_to_find_echo(circle_count=1 if getattr(task,'_cloud_nest_continue_unconfirmed',False) is True else 3),
+                         on_searched_empty=searched_empty,on_unconfirmed_allowed=unconfirmed_allowed,
+                         on_target_seen=lambda first,second: receipt.target_seen(first,second))
+ 
+--- a/cloud_nest_pickup.py
++++ b/cloud_nest_pickup.py
+@@ -163,6 +163,10 @@
+             try:
+                 return self._search()
+             except PickupSearchEmpty:
++                if getattr(self.task,'_cloud_nest_continue_unconfirmed',False) is True:
++                    # The authorized callback verifies the named book row even
++                    # if the cleared world's objective has disappeared.
++                    raise PickupSearchEmpty('Bounded same-nest search exhausted; verify continuation')
+                 if (self.on_searched_empty is not None and self.native_circle is not None
+                         and not self.absorb_sent and not self.target_seen):
+                     self.on_searched_empty()
+@@ -191,8 +195,10 @@
+                 if self.absorb():
+                     return True
+             # Walking and teleporting cannot consume the YOLO time allowance.
+-            deadline = time.monotonic()+90
+-            task.log_info('CLOUD_NEST_PICKUP YOLO started budget=90s max_steps=30')
++            budget=getattr(task,'_cloud_nest_pickup_seconds',90)
++            if budget not in (30,90):raise RuntimeError('Unsupported nest pickup budget')
++            deadline = time.monotonic()+budget
++            task.log_info(f'CLOUD_NEST_PICKUP YOLO started budget={budget}s max_steps=30')
+             scans = 0
+             for _ in range(30):
+                 if time.monotonic() >= deadline:
+--- a/main_cloud_full_echo.py
++++ b/main_cloud_full_echo.py
+@@ -261,6 +261,9 @@
+         settings_path=Path(__file__).resolve().parent.parent/'okww-cloud-session/background/autorun-config.json'
+         settings=json.loads(settings_path.read_text(encoding='utf-8'))
+         task._cloud_nest_food_required=settings.get('nest_food_required',False) is True
++        # Current user's Shanghai full workflow only; independent callers retain strict policy.
++        task._cloud_nest_continue_unconfirmed=True
++        task._cloud_nest_pickup_seconds=30
+         def run():
+             stop=threading.Event()
+             def observe():
+@@ -290,7 +293,8 @@
+                         raise RuntimeError('Nest returned without completed pickup search')
+                     pickup_results[selected[0]]={'search_completed':True,
+                         'absorbed':task.info.get('Nest Echo Collected') is True,
+-                        'unconfirmed_allowed':task.info.get('Nest Pickup Unconfirmed Allowed') is True}
++                        'unconfirmed_allowed':task.info.get('Nest Pickup Unconfirmed Allowed') is True,
++                        'continuation_policy':__import__('cloud_nest_state').CLEARED_NEST_CONTINUATION_POLICY}
+                     finished.append(selected[0]);record('nest_succeeded',name=selected[0],info=dict(task.info),image=snap(task,'completed'))
+                 raise RuntimeError('Nest batch safety limit reached')
+             except BaseException as exc:
+--- a/cloud_full_chain.py
++++ b/cloud_full_chain.py
+@@ -211,10 +211,11 @@
+         if results is not None:
+             if set(results)!=set(done['finished']) or any(v.get('search_completed') is not True for v in results.values()):
+                 raise RuntimeError('Nest pickup search checkpoints incomplete')
+-            from cloud_nest_state import OPTIONAL_PICKUP_TARGET
+-            if any(v.get('unconfirmed_allowed') and (name!=OPTIONAL_PICKUP_TARGET or v['absorbed'])
++            from cloud_nest_state import OPTIONAL_PICKUP_TARGET,CLEARED_NEST_CONTINUATION_POLICY
++            if any(v.get('unconfirmed_allowed') and (v['absorbed'] or
++                   (name!=OPTIONAL_PICKUP_TARGET and v.get('continuation_policy')!=CLEARED_NEST_CONTINUATION_POLICY))
+                    for name,v in results.items()):
+-                raise RuntimeError('Unconfirmed pickup policy escaped the final nest')
++                raise RuntimeError('Unconfirmed pickup lacks cleared-nest continuation policy')
+             receipt.update(verified_pickups=[name for name,v in results.items() if v['absorbed']],
+                 searched_no_echo=[name for name,v in results.items() if not v['absorbed'] and not v.get('unconfirmed_allowed')],
+                 pickup_unconfirmed_allowed=[name for name,v in results.items() if v.get('unconfirmed_allowed')],
+--- a/stage_policy.py
++++ b/stage_policy.py
+@@ -19,7 +19,8 @@
+     missing=[n for n,r in results.items() if r['required'] and not r['ok']]
+     optional=[n for n,r in results.items() if not r['required'] and not r['ok']]
+     return {'status':'PARTIAL' if missing else 'SUCCEEDED_WITH_SKIPS' if optional or any(
+-        r.get('record',{}).get('status')=='SKIPPED_ALLOWED_FAILURE' for r in results.values()) else 'SUCCEEDED',
++        r.get('record',{}).get('status')=='SKIPPED_ALLOWED_FAILURE' or
++        bool(r.get('record',{}).get('receipt',{}).get('pickup_unconfirmed_allowed')) for r in results.values()) else 'SUCCEEDED',
+         'required_complete':not missing,'required_incomplete':missing,'optional_incomplete':optional,
+         'stage_results':results}
+ 
